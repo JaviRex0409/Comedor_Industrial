@@ -40,7 +40,6 @@ export default function Home() {
 
   return (
     <div className="min-h-screen bg-[#fef7ff] flex flex-col">
-      <BrowserHeader />
 
       <div className="flex flex-1">
         <Sidebar />

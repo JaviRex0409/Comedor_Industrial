@@ -1,7 +1,6 @@
 "use client"
 import { useState } from "react"
 import Image from "next/image"
-import BrowserHeader from "@/components/browser-header"
 import Sidebar from "@/components/sidebar"
 import AppLogo from "@/components/app-logo"
 
@@ -44,7 +43,6 @@ export default function RegistroConsumo() {
 
   return (
     <div className="min-h-screen bg-[#fef7ff] flex flex-col">
-      <BrowserHeader />
       <div className="flex flex-1">
         <Sidebar />
         <div className="flex-1 p-4">
