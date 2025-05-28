@@ -1,8 +1,7 @@
 "use client"
+
 import { useEffect, useState } from "react"
 import Image from "next/image"
-import Link from "next/link"
-import {useRouter} from "next/navigation"
 import Sidebar from "@/components/sidebar"
 import AppLogo from "@/components/app-logo"
 
@@ -13,101 +12,118 @@ interface Consumo {
   fecha: string
 }
 
+interface Empleado {
+  id_empleado: number
+  nombre: string
+  departamento: string
+  fotografia: string
+}
 
-export default function Home() {
-  const router = useRouter();
+export default function Dashboard() {
   const [registros, setRegistros] = useState<Consumo[]>([])
-
+  const [empleados, setEmpleados] = useState<Empleado[]>([])
+  const [empleadosMap, setEmpleadosMap] = useState<Record<number, Empleado>>({})
+  const [totalConsumos, setTotalConsumos] = useState(0)
+  const [totalEmpleados, setTotalEmpleados] = useState(0)
   const API_BASE = "https://pz8q3ogutd.execute-api.us-east-2.amazonaws.com/prod"
 
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const res = await fetch(`${API_BASE}/consumo`)
-        const data = await res.json()
-
-        // Ordenar por fecha descendente si está disponible
-        const ordenados = data.sort((a: Consumo, b: Consumo) => new Date(b.fecha).getTime() - new Date(a.fecha).getTime())
-
-        // Limitar a los 5 más recientes
-        console.log("Registros:", ordenados)
+        const resConsumo = await fetch(`${API_BASE}/consumo`)
+        const dataConsumo = await resConsumo.json()
+        const ordenados = dataConsumo.sort((a: Consumo, b: Consumo) => new Date(b.fecha).getTime() - new Date(a.fecha).getTime())
         setRegistros(ordenados.slice(0, 5))
+        setTotalConsumos(dataConsumo.length)
+
+        const resEmpleado = await fetch(`${API_BASE}/empleado`)
+        const dataEmpleado = await resEmpleado.json()
+        setEmpleados(dataEmpleado.slice(0, 5))
+        setTotalEmpleados(dataEmpleado.length)
+
+        const map: Record<number, Empleado> = {}
+        dataEmpleado.forEach((emp: Empleado) => {
+          map[emp.id_empleado] = emp
+        })
+        setEmpleadosMap(map)
       } catch (error) {
-        console.error("Error al obtener los registros:", error)
+        console.error("Error al obtener datos del dashboard:", error)
       }
     }
-
     fetchData()
-
-    const intervalId = setInterval(() => {
-               router.refresh();
-           }, 10000);
-           return () => clearInterval(intervalId);
-    
-  }, [router]);
+  }, [])
 
   return (
-    <div className="min-h-screen bg-[#fef7ff] flex flex-col">
-
-      <div className="flex flex-1">
-        <Sidebar />
-
-        <div className="flex-1 p-4">
-          <div className="flex items-center mb-8">
+    <div className="min-h-screen bg-[#fef7ff] flex">
+      <Sidebar />
+      <div className="flex-1 p-6 space-y-10">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center space-x-4">
             <AppLogo />
-            <h1 className="text-2xl font-bold text-[#1d1b20]">Página Principal</h1>
+            <h1 className="text-3xl font-bold text-[#1d1b20]">Dashboard</h1>
+          </div>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div className="bg-[#eaddff] rounded-xl p-6">
+            <h2 className="text-xl font-bold text-[#1d1b20] mb-4">Resumen General</h2>
+            <p className="text-[#1d1b20] text-lg">Total de empleados registrados: <span className="font-semibold">{totalEmpleados}</span></p>
+            <p className="text-[#1d1b20] text-lg">Total de consumos registrados: <span className="font-semibold">{totalConsumos}</span></p>
           </div>
 
-          <div className="flex justify-center mb-8">
-            <Link
-              href="/registro-consumo"
-              className="bg-[#eaddff] text-[#1d1b20] font-medium py-3 px-8 rounded-full text-lg"
-            >
-              Registrar Consumo
-            </Link>
-          </div>
-
-          <div>
-            <h2 className="text-xl font-bold text-[#1d1b20] mb-4">Registros Recientes:</h2>
-
-            <div className="space-y-3">
-              <div className="flex bg-[#eaddff] rounded-lg p-3">
-                <div className="w-12">
-                  <div className="w-8 h-8 rounded-full overflow-hidden">
-                    <Image src="/abstract-profile.png" alt="Profile" width={32} height={32} className="object-cover" />
+          <div className="bg-[#eaddff] rounded-xl p-6">
+            <h2 className="text-xl font-bold text-[#1d1b20] mb-4">Últimos Empleados</h2>
+            <ul className="space-y-3">
+              {empleados.map((emp) => (
+                <li key={emp.id_empleado} className="flex items-center gap-4">
+                  <Image
+                    src={emp.fotografia || "/abstract-profile.png"}
+                    alt="Empleado"
+                    width={48}
+                    height={48}
+                    className="rounded-full object-cover"
+                  />
+                  <div className="text-[#1d1b20]">
+                    <p className="font-medium">{emp.nombre}</p>
+                    <p className="text-sm">{emp.departamento}</p>
                   </div>
-                </div>
-                <div className="w-16 font-medium text-[#1d1b20]">ID</div>
-                <div className="flex-1 font-medium text-[#1d1b20]">Fecha</div>
-                <div className="w-32 font-medium text-[#1d1b20]">Tipo de Comida</div>
-                <div className="w-24 font-medium text-[#1d1b20]">Costo</div>
-              </div>
+                </li>
+              ))}
+            </ul>
+          </div>
 
-              {registros.map((item, index) => (
-                <div key={index} className="flex bg-[#eaddff] rounded-lg p-3">
-                  <div className="w-12">
-                    <div className="w-8 h-8 rounded-full overflow-hidden">
+          <div className="col-span-full bg-[#eaddff] rounded-xl p-6">
+            <h2 className="text-xl font-bold text-[#1d1b20] mb-4">Últimos Consumos</h2>
+            <div className="flex bg-[#d0bcff] rounded-md px-4 py-2 font-semibold text-[#1d1b20]">
+              <div className="w-12"></div>
+              <div className="flex-1">Empleado</div>
+              <div className="w-32">Tipo de Comida</div>
+              <div className="w-24">Costo</div>
+              <div className="w-40">Fecha</div>
+            </div>
+            <div className="space-y-2">
+              {registros.map((reg, index) => {
+                const empleado = empleadosMap[reg.id_empleado]
+                return (
+                  <div key={index} className="flex items-center gap-4 bg-white rounded-md px-4 py-2">
+                    <div className="w-12 h-12 rounded-full overflow-hidden">
                       <Image
-                        src="/abstract-profile.png"
-                        alt="Profile"
-                        width={32}
-                        height={32}
+                        src={empleado?.fotografia || "/abstract-profile.png"}
+                        alt="Empleado"
+                        width={48}
+                        height={48}
                         className="object-cover"
                       />
                     </div>
+                    <div className="flex-1">
+                      <p className="text-[#1d1b20] font-medium">{empleado?.nombre || `Empleado ${reg.id_empleado}`}</p>
+                    </div>
+                    <span className="w-32 text-[#1d1b20]">{reg.tipo_comida}</span>
+                    <span className="w-24 text-[#1d1b20]">${reg.precio.toFixed(2)}</span>
+                    <span className="w-40 text-[#1d1b20]">{reg.fecha}</span>
                   </div>
-                  <div className="w-16 text-[#1d1b20]">{item.id_empleado}</div>
-                  <div className="flex-1 text-[#1d1b20]">{item.fecha}</div>
-                  <div className="w-32 text-[#1d1b20]">{item.tipo_comida}</div>
-                  <div className="w-24 text-[#1d1b20]">${item.precio.toFixed(2)}</div>
-                </div>
-              ))}
-
-              <div className="flex justify-center space-x-1 mt-4">
-                <div className="w-2 h-2 rounded-full bg-[#79747e]"></div>
-                <div className="w-2 h-2 rounded-full bg-[#79747e]"></div>
-                <div className="w-2 h-2 rounded-full bg-[#79747e]"></div>
-              </div>
+                )
+              })}
             </div>
           </div>
         </div>
