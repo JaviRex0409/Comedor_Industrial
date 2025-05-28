@@ -6,8 +6,8 @@ import Sidebar from "@/components/sidebar"
 import AppLogo from "@/components/app-logo"
 
 export default function RegistroEmpleados() {
-  const [nombre, setNombre] = useState("")
-  const [departamento, setDepartamento] = useState("")
+  const [Nombre, setNombre] = useState("")
+  const [Departamento, setDepartamento] = useState("")
   const [foto, setFoto] = useState<string | null>(null)
   const [confirmacion, setConfirmacion] = useState("")
 
@@ -23,7 +23,7 @@ export default function RegistroEmpleados() {
   }
 
   const handleSubmit = async () => {
-    if (!nombre || !departamento || !foto) {
+    if (!Nombre || !Departamento || !foto) {
       setConfirmacion("Por favor, completa todos los campos.")
       return
     }
@@ -33,9 +33,9 @@ export default function RegistroEmpleados() {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          nombre,
-          departamento,
-          fotografia: foto,
+          Nombre,
+          Departamento,
+          Fotografia: foto,
         }),
       })
 
@@ -70,7 +70,7 @@ export default function RegistroEmpleados() {
               <input
                 type="text"
                 id="full-name"
-                value={nombre}
+                value={Nombre}
                 onChange={(e) => setNombre(e.target.value)}
                 placeholder="Nombre Completo"
                 className="w-full p-4 bg-[#eaddff] rounded-lg text-[#1d1b20] placeholder-[#49454f]"
@@ -85,7 +85,7 @@ export default function RegistroEmpleados() {
               <input
                 type="text"
                 id="department"
-                value={departamento}
+                value={Departamento}
                 onChange={(e) => setDepartamento(e.target.value)}
                 placeholder="Departamento"
                 className="w-full p-4 bg-[#eaddff] rounded-lg text-[#1d1b20] placeholder-[#49454f]"

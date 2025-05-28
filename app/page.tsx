@@ -2,6 +2,7 @@
 import { useEffect, useState } from "react"
 import Image from "next/image"
 import Link from "next/link"
+import {useRouter} from "next/navigation"
 import Sidebar from "@/components/sidebar"
 import AppLogo from "@/components/app-logo"
 
@@ -12,7 +13,9 @@ interface Consumo {
   fecha: string
 }
 
+
 export default function Home() {
+  const router = useRouter();
   const [registros, setRegistros] = useState<Consumo[]>([])
 
   const API_BASE = "https://pz8q3ogutd.execute-api.us-east-2.amazonaws.com/prod"
@@ -35,7 +38,13 @@ export default function Home() {
     }
 
     fetchData()
-  }, [])
+
+    const intervalId = setInterval(() => {
+               router.refresh();
+           }, 10000);
+           return () => clearInterval(intervalId);
+    
+  }, [router]);
 
   return (
     <div className="min-h-screen bg-[#fef7ff] flex flex-col">
@@ -70,8 +79,8 @@ export default function Home() {
                 </div>
                 <div className="w-16 font-medium text-[#1d1b20]">ID</div>
                 <div className="flex-1 font-medium text-[#1d1b20]">Fecha</div>
-                <div className="w-32 font-medium text-[#1d1b20]">TipoComida</div>
-                <div className="w-24 font-medium text-[#1d1b20]">$Costo</div>
+                <div className="w-32 font-medium text-[#1d1b20]">Tipo de Comida</div>
+                <div className="w-24 font-medium text-[#1d1b20]">Costo</div>
               </div>
 
               {registros.map((item, index) => (
