@@ -1,5 +1,5 @@
 "use client"
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import Image from "next/image"
 import Sidebar from "@/components/sidebar"
 import AppLogo from "@/components/app-logo"
@@ -9,9 +9,34 @@ export default function RegistroConsumo() {
   const [tipoComida, setTipoComida] = useState<"Desayuno" | "Comida" | null>(null)
   const [precio, setPrecio] = useState("")
   const [confirmation, setConfirmation] = useState("")
+  const now = new Date()
+  const time = parseInt(now.toLocaleTimeString('en-US',{hour12: false}))
 
   const API_BASE = "https://pz8q3ogutd.execute-api.us-east-2.amazonaws.com/prod"
 
+  const fetchData = async () => {
+      try {
+        const res = await fetch(`${API_BASE}/comida`)
+        const data = await res.json()
+
+        if (time <= 12) {
+          setPrecio(data[1]["precio"])
+          setTipoComida(data[1]["comida"])
+        }
+        else {
+          setPrecio(data[0]["precio"])
+          setTipoComida(data[0]["comida"])
+        }
+
+
+      } catch (error) {
+        console.error("Error al obtener precios", error)
+      }
+    }
+  
+  useEffect(() => {
+    fetchData()
+  }, [] )
   const handleSubmit = async () => {
     if (!employeeNumber || !tipoComida || !precio) {
       setConfirmation("Por favor, completa todos los campos.")
@@ -33,7 +58,7 @@ export default function RegistroConsumo() {
       if (!res.ok) throw new Error("Fallo el registro")
       setConfirmation("Consumo registrado exitosamente.")
       setEmployeeNumber("")
-      setPrecio("")
+      setPrecio(precio)
       setTipoComida(null)
     } catch (error) {
       console.error(error)
@@ -86,15 +111,13 @@ export default function RegistroConsumo() {
               <label className="block text-xl font-medium text-[#1d1b20] mb-2">Tipo de Consumo:</label>
               <div className="grid grid-cols-2 gap-4">
                 <button
-                  onClick={() => setTipoComida("Desayuno")}
                   className={`p-4 rounded-lg font-medium ${
-                    tipoComida === "Desayuno" ? "bg-[#d0bcff]" : "bg-[#cac4d0]"
+                    tipoComida === "Desayuno" ? "bg-[#d0bcff]" : "bg-[#eaddff]"
                   }`}
                 >
                   Desayuno
                 </button>
                 <button
-                  onClick={() => setTipoComida("Comida")}
                   className={`p-4 rounded-lg font-medium ${
                     tipoComida === "Comida" ? "bg-[#d0bcff]" : "bg-[#eaddff]"
                   }`}
@@ -107,16 +130,8 @@ export default function RegistroConsumo() {
             {/* Costo */}
             <div>
               <label htmlFor="cost" className="block text-xl font-medium text-[#1d1b20] mb-2">
-                Costo:
+                Costo: {precio}
               </label>
-              <input
-                type="text"
-                id="cost"
-                value={precio}
-                onChange={(e) => setPrecio(e.target.value)}
-                placeholder="Costo"
-                className="w-full p-4 bg-[#cac4d0] rounded-lg text-[#1d1b20] placeholder-[#49454f]"
-              />
             </div>
 
             {/* Botón de envío */}
