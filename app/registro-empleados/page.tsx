@@ -35,7 +35,7 @@ export default function RegistroEmpleados() {
         body: JSON.stringify({
           Nombre,
           Departamento,
-          Fotografia: foto,
+          imagenBase64: foto,
         }),
       })
 
@@ -44,7 +44,9 @@ export default function RegistroEmpleados() {
       setConfirmacion("Empleado registrado exitosamente.")
       setNombre("")
       setDepartamento("")
-      setFoto(null)
+      // ✅ Dejamos la imagen cargada visible
+      // Si quieres limpiar todo, puedes descomentar la siguiente línea:
+      // setFoto(null)
     } catch (error) {
       console.error(error)
       setConfirmacion("Error al registrar al empleado.")
@@ -103,25 +105,18 @@ export default function RegistroEmpleados() {
 
                 <div className="mt-4">
                   <div className="w-24 h-24 rounded-full overflow-hidden mb-2">
-                    {foto ? (
-                      <Image
-                        src={foto}
-                        alt="Vista previa"
-                        width={96}
-                        height={96}
-                        className="object-cover"
-                      />
-                    ) : (
-                      <Image
-                        src="/abstract-profile.png"
-                        alt="Vista previa"
-                        width={96}
-                        height={96}
-                        className="object-cover"
-                      />
-                    )}
+                    <Image
+                      src={foto || "/abstract-profile.png"}
+                      alt="Vista previa"
+                      width={96}
+                      height={96}
+                      className="object-cover"
+                    />
                   </div>
                   <div className="text-center text-[#1d1b20]">Vista Previa</div>
+                  {foto && (
+                    <div className="text-sm text-green-600 text-center mt-1">Imagen cargada correctamente.</div>
+                  )}
                 </div>
               </div>
             </div>
