@@ -20,13 +20,14 @@ export default function RegistroConsumo() {
         const data = await res.json()
 
         if (time <= 12) {
-          setPrecio(data[1]["precio"])
-          setTipoComida(data[1]["comida"])
+          setPrecio(data[0]["precio"])
+          setTipoComida(data[0]["tipo_comida"])
         }
         else {
-          setPrecio(data[0]["precio"])
-          setTipoComida(data[0]["comida"])
+          setPrecio(data[1]["precio"])
+          setTipoComida(data[1]["tipo_comida"])
         }
+        console.log("tipoComida", tipoComida)
 
 
       } catch (error) {
@@ -38,7 +39,7 @@ export default function RegistroConsumo() {
     fetchData()
   }, [] )
   const handleSubmit = async () => {
-    if (!employeeNumber || !tipoComida || !precio) {
+    if (!employeeNumber) {
       setConfirmation("Por favor, completa todos los campos.")
       return
     }
@@ -59,7 +60,7 @@ export default function RegistroConsumo() {
       setConfirmation("Consumo registrado exitosamente.")
       setEmployeeNumber("")
       setPrecio(precio)
-      setTipoComida(null)
+      setTipoComida(tipoComida)
     } catch (error) {
       console.error(error)
       setConfirmation("Error al registrar el consumo.")
