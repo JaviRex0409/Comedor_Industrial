@@ -1,19 +1,20 @@
 "use client"
+
 import { useState } from "react"
 import Sidebar from "@/components/sidebar"
 import AppLogo from "@/components/app-logo"
 
 export default function GenerarReportes() {
-  const [employeeNumber, setEmployeeNumber] = useState("")
   const [reportType, setReportType] = useState<"diario" | "mensual" | null>(null)
-  const [previewData, setPreviewData] = useState<any[]>([])
+  const [reportData, setReportData] = useState<any[]>([])
   const [confirmation, setConfirmation] = useState("")
+  const [showReport, setShowReport] = useState(false)
 
   const API_BASE = "https://pz8q3ogutd.execute-api.us-east-2.amazonaws.com/prod"
 
   const handleGenerateReport = async () => {
-    if (!employeeNumber || !reportType) {
-      setConfirmation("Por favor, completa los campos.")
+    if (!reportType) {
+      setConfirmation("Por favor, selecciona un tipo de reporte.")
       return
     }
 
@@ -23,15 +24,16 @@ export default function GenerarReportes() {
         const now = new Date()
         const yearMonth = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}`
         url += `/${yearMonth}`
+      } else {
+        const today = new Date().toISOString().slice(0, 10)
+        url += `?fecha=${today}`
       }
 
       const res = await fetch(url)
       const data = await res.json()
 
-      // Filtros por empleado
-      const filtered = data.filter((item: any) => item.id_empleado.toString() === employeeNumber)
-
-      setPreviewData(filtered)
+      setReportData(data)
+      setShowReport(true)
       setConfirmation("Reporte generado correctamente.")
     } catch (error) {
       console.error("Error generando reporte:", error)
@@ -50,22 +52,6 @@ export default function GenerarReportes() {
           </div>
 
           <div className="space-y-6 max-w-3xl mx-auto">
-            {/* Número de Empleado */}
-            <div>
-              <label htmlFor="employee-number" className="block text-xl font-medium text-[#1d1b20] mb-2">
-                Número de Empleado:
-              </label>
-              <input
-                type="text"
-                id="employee-number"
-                value={employeeNumber}
-                onChange={(e) => setEmployeeNumber(e.target.value)}
-                placeholder="Número de empleado"
-                className="w-full p-4 bg-[#eaddff] rounded-lg text-[#1d1b20] placeholder-[#49454f]"
-              />
-            </div>
-
-            {/* Tipo de Reporte */}
             <div>
               <label className="block text-xl font-medium text-[#1d1b20] mb-2">Tipo de Reporte:</label>
               <div className="grid grid-cols-2 gap-4">
@@ -80,7 +66,7 @@ export default function GenerarReportes() {
                 <button
                   onClick={() => setReportType("mensual")}
                   className={`p-4 rounded-lg font-medium ${
-                    reportType === "mensual" ? "bg-[#d0bcff]" : "bg-[#eaddff]"
+                    reportType === "mensual" ? "bg-[#d0bcff]" : "bg-[#cac4d0]"
                   }`}
                 >
                   Mensual
@@ -88,25 +74,6 @@ export default function GenerarReportes() {
               </div>
             </div>
 
-            {/* Vista Previa */}
-            <div>
-              <label className="block text-xl font-medium text-[#1d1b20] mb-2">Vista Previa</label>
-              <div className="w-full h-80 bg-[#cac4d0] rounded-lg overflow-auto p-2">
-                {previewData.length > 0 ? (
-                  <ul className="text-[#1d1b20] space-y-2">
-                    {previewData.map((item, index) => (
-                      <li key={index}>
-                        {item.fecha} - {item.tipo_comida} - ${item.precio}
-                      </li>
-                    ))}
-                  </ul>
-                ) : (
-                  <p className="text-[#1d1b20] italic">Sin datos</p>
-                )}
-              </div>
-            </div>
-
-            {/* Generar botón */}
             <div className="flex justify-end mt-8">
               <button
                 onClick={handleGenerateReport}
@@ -116,8 +83,26 @@ export default function GenerarReportes() {
               </button>
             </div>
 
-            {/* Confirmación */}
             <div className="text-center text-[#1d1b20] mt-4">{confirmation}</div>
+
+            {showReport && (
+              <div className="mt-6">
+                <h2 className="text-xl font-semibold text-[#1d1b20] mb-2">Reporte Generado</h2>
+                <div className="w-full max-h-[400px] bg-[#cac4d0] rounded-lg overflow-auto p-4">
+                  {reportData.length > 0 ? (
+                    <ul className="text-[#1d1b20] space-y-2">
+                      {reportData.map((item, index) => (
+                        <li key={index}>
+                          ID: {item.id_empleado} - {item.fecha} - {item.tipo_comida} - ${item.precio}
+                        </li>
+                      ))}
+                    </ul>
+                  ) : (
+                    <p className="italic text-[#1d1b20]">No hay datos para mostrar.</p>
+                  )}
+                </div>
+              </div>
+            )}
           </div>
         </div>
       </div>
